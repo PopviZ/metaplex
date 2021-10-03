@@ -1,10 +1,13 @@
 # Stage 1: Compile and Build the app
 
 # Node veersion
-FROM node:14.17.3-alpine as build
+# FROM node:14.17.3-alpine as build
+FROM node:lts-stretch-slim as build
 
 # Check https://github.com/nodejs/docker-node/tree/b4117f9333da4138b03a546ec926ef50a31506c3#nodealpine to understand why libc6-compat might be needed.
-RUN apk add --no-cache libc6-compat git
+# RUN apk add --no-cache libc6-compat git python3
+
+
 
 # Set the working directory
 WORKDIR /app
@@ -25,13 +28,18 @@ RUN yarn build
 # Stage 2: Serve app with nginx server
 
 # Production image, copy all the files and run next
-FROM node:14.17.3-alpine AS runner
+# FROM node:14.17.3-alpine AS runner
+FROM node:lts-stretch-slim AS runner
+
 WORKDIR /app
 
 ENV NODE_ENV production
 
-RUN addgroup -g 1001 -S nodejs
-RUN adduser -S nextjs -u 1001
+# RUN addgroup -g 1001 -S nodejs
+# RUN adduser -S nextjs -u 1001
+RUN groupadd --gid 1001 nodejs
+RUN adduser --gid 1001 nextjs
+
 
 # Copy the build output to replace the default nginx contents.
 COPY --from=build /app/packages/web/next.config.js ./
